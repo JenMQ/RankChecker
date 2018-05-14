@@ -1,0 +1,178 @@
+﻿<Window x:Class="RC.Client.RankCheckerView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+        xmlns:converters="clr-namespace:RC.Common.Infrastructure.Converters;assembly=RC.Common.Infrastructure"
+        xmlns:validationRules="clr-namespace:RC.Common.Infrastructure.ValidationRules;assembly=RC.Common.Infrastructure"
+        Title="SEO Tool: Rank Checker" 
+        Height="400" Width="800">
+
+    <!-- Common Resources: Styles and Templates -->
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <converters:ZeroToNonVisibilityConverter x:Key="ZeroToNonVisibilityConverter" />
+        
+        <Thickness x:Key="DefaultMargin">0,0,10,10</Thickness>
+
+        <Style TargetType="TextBlock">
+            <Setter Property="Margin" Value="0,0,0,5" />
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="Margin" Value="{StaticResource DefaultMargin}" />
+            <Style.Triggers>
+                <Trigger Property="Validation.HasError" Value="True">
+                    <Setter Property="BorderBrush" Value="Red" />
+                    <Setter Property="ToolTip">
+                        <Setter.Value>
+                            <Binding Path="(Validation.Errors).CurrentItem.ErrorContent" RelativeSource="{x:Static RelativeSource.Self}" />
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="Margin" Value="{StaticResource DefaultMargin}" />
+            <Setter Property="Padding" Value="5" />
+        </Style>
+        <Style TargetType="ComboBox">
+            <Setter Property="Margin" Value="{StaticResource DefaultMargin}" />
+        </Style>
+        <Style TargetType="ProgressBar">
+            <Setter Property="Margin" Value="{StaticResource DefaultMargin}" />
+        </Style>
+
+        <DataTemplate x:Key="SearchQueryDataTemplate">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Keywords: " Margin="10,0,0,0" />
+                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Keywords}" />
+
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="URL: " Margin="10,0,0,0" />
+                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding UrlString}" />
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="SearchEngineDataTemplate">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="130" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" Text="{Binding Item2.Name}" Margin="10,0,10,0" />
+                <TextBlock Grid.Column="1" Text="{Binding Item2.Url}" />
+            </Grid>
+        </DataTemplate>
+    </Window.Resources>
+
+    <!-- Main Content -->
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="20" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="15" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        
+        <!-- Search Engine Label -->
+        <TextBlock Grid.Row="0" Grid.Column="0" Text="Search Engine" />
+        <ComboBox Grid.Row="1" Grid.Column="0" 
+                  ItemsSource="{Binding SearchEngines}" 
+                  ItemTemplate="{StaticResource SearchEngineDataTemplate}"
+                  SelectedItem="{Binding SelectedSearchEngine}" />
+
+        <!-- Number of Search Results -->
+        <TextBlock Grid.Row="0" Grid.Column="1" Text="Number of Search Results" />
+        <ComboBox Grid.Row="1" Grid.Column="1" 
+                  ItemsSource="{Binding NumberOfSearchResults}"
+                  SelectedItem="{Binding SelectedNumberOfResults}" />
+
+        <!-- Input Labels -->
+        <TextBlock Grid.Row="2" Grid.Column="0" Text="Keywords" />
+        <TextBlock Grid.Row="2" Grid.Column="1" Text="URL" />
+
+        <!-- Input Controls: Keywords and Url String -->
+        <TextBox Grid.Row="3" Grid.Column="0"
+                 ToolTip="Enter your search keywords here.">
+            <TextBox.Text>
+                <Binding Path="Keywords"
+                         UpdateSourceTrigger="PropertyChanged"
+                         ValidatesOnNotifyDataErrors="True"
+                         ValidatesOnDataErrors="True"
+                         NotifyOnValidationError="True">
+                    <Binding.ValidationRules>
+                        <validationRules:StringIsNotEmptyValidationRule ValidatesOnTargetUpdated="True" />
+                    </Binding.ValidationRules>
+                </Binding>
+            </TextBox.Text>
+        </TextBox>
+        <TextBox Grid.Row="3" Grid.Column="1"
+                 ToolTip="Enter the URL to find from the search results.">
+            <TextBox.Text>
+                <Binding Path="UrlString"
+                         UpdateSourceTrigger="PropertyChanged"
+                         ValidatesOnNotifyDataErrors="True"
+                         ValidatesOnDataErrors="True"
+                         NotifyOnValidationError="True">
+                    <Binding.ValidationRules>
+                        <validationRules:UrlValidationRule ValidatesOnTargetUpdated="True" />
+                    </Binding.ValidationRules>
+                </Binding>
+            </TextBox.Text>
+        </TextBox>
+
+        <!-- Recent Searches -->
+        <TextBlock Grid.Row="4" Grid.Column="0" Text="Recent Searches"
+                   Visibility="{Binding RecentSearchesCollection.Count, Converter={StaticResource ZeroToNonVisibilityConverter}}" />
+        <ComboBox Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2"  Height="40"
+                  ItemsSource="{Binding RecentSearchesCollection}" 
+                  ItemTemplate="{StaticResource SearchQueryDataTemplate}"
+                  SelectedItem="{Binding SelectedSearchQuery}"
+                  Visibility="{Binding RecentSearchesCollection.Count, Converter={StaticResource ZeroToNonVisibilityConverter}}">
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="SelectionChanged">
+                    <i:InvokeCommandAction Command="{Binding SearchQuerySelectionChangedCommand}" />
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+        </ComboBox>
+
+        <!-- Check and Clear Buttons -->
+        <Grid Grid.Row="6" Grid.Column="1" Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            
+            <Button Grid.Column="0" Content="Check Rank" Command="{Binding CheckCommand}" />
+            <Button Grid.Column="1" Content="Clear" Command="{Binding ClearCommand}" />
+        </Grid>
+            
+
+        <!-- Results Label -->
+        <TextBlock Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding ResultsStatus}" />
+        <ProgressBar Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2" IsIndeterminate="True" 
+                     Visibility="{Binding IsSearchInProgress, Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+        <!-- Results Display -->
+        <TextBox Grid.Row="10" Grid.ColumnSpan="2" IsReadOnly="True" Text="{Binding ResultsText}" />
+    </Grid>
+</Window>
